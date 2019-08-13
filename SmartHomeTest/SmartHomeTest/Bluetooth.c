@@ -2,7 +2,7 @@
  * Bluetooth.c
  *
  * Created: 2019-05-14 오후 2:47:19
- *  Author: KIM HEE RAM
+ *  Author: SmartHome by HJE
  */ 
 #include <avr/io.h>
 #define F_CPU 16000000UL
