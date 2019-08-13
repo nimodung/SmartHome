@@ -2,7 +2,7 @@
  * SmartHomeTest.c
  *
  * Created: 2019-06-25 오전 10:17:36
- * Author : KIM HEE RAM
+ * Author : SmartHome by HJE
  */ 
 
 #include <avr/io.h>
