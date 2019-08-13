@@ -2,7 +2,7 @@
  * Bluetooth.h
  *
  * Created: 2019-05-14 오후 4:17:03
- *  Author: tjoeun
+ *  Author: SmartHome by HJE
  */ 
 
 
