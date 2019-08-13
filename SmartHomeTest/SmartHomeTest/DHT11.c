@@ -2,7 +2,7 @@
  * DHT11.c
  *
  * Created: 2019-04-22 오후 3:59:55
- *  Author: Kim Hee Ram
+ *  Author: SmartHome by HJE
  */ 
 
 #include <avr/io.h>
