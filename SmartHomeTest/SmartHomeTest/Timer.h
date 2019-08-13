@@ -2,7 +2,7 @@
  * Timer.h
  *
  * Created: 2019-04-15 오후 3:36:06
- *  Author: user
+ *  Author: SmartHome by HJE
  */ 
 
 
