@@ -2,7 +2,7 @@
  * ADC.h
  *
  * Created: 2019-04-24 오후 2:18:19
- *  Author: user
+ *  Author: SmartHome by HJE
  */ 
 
 
