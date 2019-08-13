@@ -2,7 +2,7 @@
  * Timer.c
  *
  * Created: 2019-04-10 오전 11:04:02
- *  Author: user
+ *  Author: SmartHome by HJE
  */ 
 
 #include <avr/io.h>
