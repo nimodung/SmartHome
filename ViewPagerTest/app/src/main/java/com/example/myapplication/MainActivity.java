@@ -19,6 +19,7 @@ import android.os.Bundle;
 import android.os.Handler;
 
 import android.os.Message;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.Toast;
@@ -38,44 +39,35 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     Set<BluetoothDevice> mDevieces;
 
     BluetoothAdapter mBluetoothAdapter;
-
     BluetoothDevice mRemoteDevice;
     BluetoothDevice selectedDevice;
-
     BluetoothSocket mSocket = null;
 
 
     static OutputStream mOutputStream = null;
     InputStream mInputStream = null;
-    String mStrDelimiter = "\n";
     char mCharDelimiter = '\n';
 
-    Thread mWorkerThread = null, EnvThread = null;
+    Thread mWorkerThread = null;
     byte[] readBuffer;
     int readBufferPosition;
 
-    final static int CONNECT_SUCCESS = 1;
-    final static int DISCONNECTED = 2;
-    final static int ROOM = 3;
-    final static int LIVINGROOM = 4;
-    final static int KITCHEN = 5;
-    final static int BATHROOM = 6;
-    final static int DOOR = 7;
-    final static int WHOLE = 8;
+
+    final static int BATHROOM = 1;
+    final static int LUX = 2;
+    final static int ENVIRONMENT = 3;
+    final static int DOOR = 4;
+    final static int LED = 5;
 
     Button btn[] = new Button[3];
     ViewPager viewPager = null;
-    Thread thread = null;
 
-    Handler Chandler = null, Lhandler = null;
-
-    int pageNumber = 0; //page 번호
-    int transVector = 1; // 화면 전환 방향
-    int count = 0;
+    static Handler Chandler = null, Lhandler = null, Ehandler = null;
 
     Message handlermsg = null;
 
-    public static boolean isBackground = false;
+    boolean isBTChecked = false;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -87,7 +79,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         viewPager.setAdapter(adapter);
 
-        btn[0] = (Button)findViewById(R.id.btn_a);
+        btn[0] = (Button)findViewById(R.id.btn_manage);
         btn[1] = (Button)findViewById(R.id.btn_b);
         btn[2] = (Button)findViewById(R.id.btn_c);
 
@@ -95,64 +87,58 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             btn[i].setOnClickListener(this);
         }
 
-        IntentFilter filter = new IntentFilter();
-        filter.addAction(BluetoothDevice.ACTION_ACL_CONNECTED);
-        filter.addAction(BluetoothDevice.ACTION_ACL_DISCONNECTED);
-        this.registerReceiver(mReciver, filter);
-
         Chandler = new MyViewPagerAdapter.CONNECTHandler();
         Lhandler = new MyViewPagerAdapter.LEDHandler();
+        Ehandler = new MyViewPagerAdapter.ENVIRONHandler();
 
-        thread = new Thread(){
-            @Override
-            public void run() {
-            super.run();
-            while(true) {
-                if(mBluetoothAdapter.isEnabled()){
-
-                }
-
-            }
-            }
-        };
-
-
-
+        IntentFilter stateFilter = new IntentFilter();
+        stateFilter.addAction(BluetoothDevice.ACTION_ACL_DISCONNECTED);
+        stateFilter.addAction(BluetoothDevice.ACTION_BOND_STATE_CHANGED);
+        registerReceiver(mReceiver, stateFilter);
 
     }
 
-    private final BroadcastReceiver mReciver = new BroadcastReceiver() {
+    private final BroadcastReceiver mReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
-            String action = intent.getAction();
+            final String action = intent.getAction();
+            Log.d("Bluetooth action", action);
 
-            if(BluetoothDevice.ACTION_ACL_CONNECTED.equals(action)){
-                handlermsg = Chandler.obtainMessage(CONNECT_SUCCESS);
-                System.out.println(handlermsg.obj);
-                Chandler.sendMessage(handlermsg);
+          //  BluetoothDevice device = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
+
+            if(action.equals(BluetoothDevice.ACTION_ACL_CONNECTED)){
+                isBTChecked = true;
+                btn[0].setText("관리종료");
             }
-            else if(BluetoothDevice.ACTION_ACL_DISCONNECTED.equals(action)){
-                handlermsg = Chandler.obtainMessage(DISCONNECTED);
-                System.out.println(handlermsg.obj);
-                Chandler.sendMessage(handlermsg);
+            else if(action.equals(BluetoothDevice.ACTION_ACL_DISCONNECTED)){
+                isBTChecked = false;
+                btn[0].setText("관리시작");
+
             }
+
         }
     };
-
-    @Override
+     @Override
     public void onClick(View view) {
         switch (view.getId()) {
-            case R.id.btn_a :
+            case R.id.btn_manage:
                 viewPager.setCurrentItem(0);
-
+                if(isBTChecked == false) {
+                    checkBluetooth();
+                }
+                else {
+                    isBTChecked = false;
+                    mBluetoothAdapter.disable();
+                    btn[0].setText("관리시작");
+                }
                 break;
             case R.id.btn_b :
                 viewPager.setCurrentItem(1);
-                Toast.makeText(this, "B버튼", Toast.LENGTH_SHORT).show();
+                Toast.makeText(this, "조명 관리", Toast.LENGTH_SHORT).show();
                 break;
             case R.id.btn_c :
                 viewPager.setCurrentItem(2);
-                Toast.makeText(this, "C버튼", Toast.LENGTH_SHORT).show();
+                Toast.makeText(this, "환경 관리", Toast.LENGTH_SHORT).show();
                 break;
                 default:
                     break;
@@ -202,7 +188,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             mInputStream = mSocket.getInputStream();
 
             Toast.makeText(getApplicationContext(), selectedDeviceName + "와 연결되었습니다.", Toast.LENGTH_SHORT).show();
-
+            isBTChecked = true;
+            btn[0].setText("관리종료");
 
             //데이터 수신 준비
             beginListenForData();
@@ -233,6 +220,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                         //InputStream.available() : 다른 쓰레드에서 blocking 하기 전까지 읽을 수 있는 문자열의 개수를 반환
                         int byteAvailable = mInputStream.available(); //수신 데이터 확인
                         if (byteAvailable > 0) { //데이터가 수신된 경우
+
                             byte[] packetBytes = new byte[byteAvailable];
                             //read(buf[]) : 입력 스트림에서 buf[]  크기만큼 읽어서 저장. 없을 경우에 -1 리턴
                             mInputStream.read(packetBytes);
@@ -252,29 +240,28 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                                         String msg = "";
                                         @Override
                                         public void run() {
-                                            String[] arr = data.split(" ");
+                                            String[] arr = data.split(" : ");
                                             if(arr[0].equals("led")){
 
+                                                handlermsg = Lhandler.obtainMessage(LED, arr[1]);
+                                                Lhandler.sendMessage(handlermsg);
                                             }
                                             else if(arr[0].equals("env")) {
 
-
-                                                // EnvrionFragment.tvHumi.setText(arr[2]);
-                                                //    EnvrionFragment.tvLux.setText(arr[6]);
-
-                                              /*   int lux = Integer.parseInt(arr[6]);
-                                                if(doorLedAutoState) {
-                                                    if(lux >= 480) {
-                                                        msg = "led door on" + mStrDelimiter;
-                                                      //  LedFragment.tvLedDoor.setText("ON");
-                                                        if(!doorLedState) doorLedState = true;
-                                                    }
-                                                    else {
-                                                        msg = "led door off" + mStrDelimiter;
-                                                      //  LedFragment.tvLedDoor.setText("OFF");
-                                                        if (doorLedState) doorLedState = false;
-                                                    }
-                                                }*/
+                                                handlermsg = Ehandler.obtainMessage(ENVIRONMENT, arr[1]);
+                                                Ehandler.sendMessage(handlermsg);
+                                            }
+                                            else if(arr[0].equals("lux")){
+                                                handlermsg = Lhandler.obtainMessage(LUX, arr[1]);
+                                                Lhandler.sendMessage(handlermsg);
+                                            }
+                                            else if(arr[0].equals("bathroom")){
+                                                handlermsg = Lhandler.obtainMessage(BATHROOM, arr[1]);
+                                                Lhandler.sendMessage(handlermsg);
+                                            }
+                                            else if(arr[0].equals("door")) {
+                                                handlermsg = Ehandler.obtainMessage(DOOR, arr[1]);
+                                                Ehandler.sendMessage(handlermsg);
                                             }
                                         }
                                     });
@@ -286,8 +273,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
 
                     } catch (Exception e) { //데이터 수신 중 오류 발생
+                        beginListenForData();
                         Toast.makeText(getApplicationContext(), "데이터 수신 중 오류가 발생했습니다.", Toast.LENGTH_LONG).show();
-                        finish(); //App 종료
+                       // finish(); //App 종료
                     }
                 }
             }
@@ -373,6 +361,12 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         }
     }
 
+    @Override
+    protected void onPause() {
+        super.onPause();
+//        unregisterReceiver(mReceiver);
+    }
+
 
     // onDestroy() : 어플이 종료될때 호출되는 함수
     // 블루투스 연결이 필요하지 않는 경우 입출력 스트림 소켓을 닫아줌
@@ -383,6 +377,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             mWorkerThread.interrupt(); // 데이터 수신 쓰레드 종료
             mInputStream.close();
             mSocket.close();
+            unregisterReceiver(mReceiver);
         } catch (Exception e) {
         }
         super.onDestroy();

@@ -10,8 +10,7 @@
 #define TIMER_H_
 
 void Timer0_init(void);
-void Timer0_HC_SR04_init(void);
-void Timer1_init_CTC_outA(void);
-void Timer0_init_CTC_outA(void);
+void Timer1_init_fast_PWM_outA(void);
+void Timer2_init_fast_PWM_outA_Motor(void);
 
 #endif /* TIMER_H_ */

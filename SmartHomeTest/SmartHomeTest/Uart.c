@@ -13,7 +13,7 @@
 
 
 volatile char RX_data;
-volatile char RX_flag, RX_cmd_count;
+volatile char RX_cmd_count;
 
 char buffer[COMMAND_MAX][BUFFER_MAX]; //BUFFER_MAX글자 안에서 명령어 입력
 /*
@@ -38,88 +38,6 @@ ISR(USART_RX_vect) { /* USART Rx Complete */
 		else buffer[buf_idx][idx++] = RX_data;
 	}
 	
-	TX0_char(RX_data);
-	RX_flag = 1;
-}
-
-int Uart_main(void)
-{
-	//char long_key_flag = 0;
-	char cmd_idx = 0;//명령어 처리를 위한 index
-	UART0_init(9600);
-	_delay_ms(1);
-	DDRB |= 1 << PORTB5;
-	PORTB &= ~(1 << PORTB5);
-	sei();
-	
-	while(1)
-	{
-		if(RX_cmd_count) {
-			RX_cmd_count--;
-			if(!strcmp(buffer[cmd_idx], "led on")) { //strcmp() : 비교해서 같으면 return 0
-				PORTB |= 1 << PORTB5;
-				
-			}
-			else if(!strcmp(buffer[cmd_idx], "led off")) { 
-				PORTB &= ~(1 << PORTB5);
-				
-			}
-			else if(!strcmp(buffer[cmd_idx], "led toggle")) {
-				PORTB ^= 1 << PORTB5;
-				
-			}
-			_delay_ms(1000);	
-			cmd_idx++;
-			cmd_idx = cmd_idx % COMMAND_MAX;
-		}
-		
-		
-		//rx_data에 따라 portb5 불 켜주기
-		/*if(RX_flag) {
-			RX_flag = 0;
-			switch(RX_data){
-				case 'a' :
-					PORTB |= 1 << PORTB5;
-					break;
-				case 'b' :
-					PORTB &= ~(1 << PORTB5); 
-					break;
-				case 'c' :
-					PORTB ^= 1 << PORTB5;
-					break;
-				default: break;
-			}
-		}*/
-		//TX0_char 한 문자 보내기
-		/*
-		TX0_char('a');
-		_delay_ms(1000); //1초에 한번씩 보낸다
-		*/
-		
-		
-	/*	if(long_key_flag) //long_key_flag가 1 일때 if문 실행
-		{
-			if(!(PINB & 0b00010000)) 
-			{   
-				TX0_char('1');
-				long_key_flag = 0;
-			}
-			else if(!(PINB & 0b00100000))
-			{ 
-				TX0_char('2');
-				long_key_flag = 0;
-			}
-		}
-		else 
-		{
-			if((PINB & 0b00010000) && (PINB & 0b00100000)) //스위치를 안누를 때 -> 연산 결과가 16 //pinb = 00010000
-			{
-				long_key_flag = 1;
-			}
-		}*/
-	} 
-	
-	return 0;
 }
 
 void UART0_init(unsigned long baud)
@@ -165,24 +83,3 @@ void TX0_char(char data) //ascii
 	UDR0 = data; //데이터 보낸 것
 }
 
-//문자열 송신
-void TX0_string(char *string)
-{
-	while((*string))			// == (*string) != '\0' //string 변수가 가리키는 값이 null이 아닐때
-	{
-		TX0_char((*string));	//string 변수가 가리키고있는 주소값의 값 //첫 글자
-		string++;				//주소값 증가 // 다음 글자
-	}
-	
-	return;
-}
-
-void TX0_4Digit(int data)
-{
-	TX0_char('0' + data / 1000 %10);
-	TX0_char('0' + data / 100 %10);
-	TX0_char('0' + data / 10 %10);
-	TX0_char('0' + data %10);
-	
-	return;
-}

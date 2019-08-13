@@ -110,7 +110,7 @@
                 android:textSize="18sp" />
 
             <TextView
-                android:id="@+id/textView"
+                android:id="@+id/tv_dooropen"
                 android:layout_width="wrap_content"
                 android:layout_height="match_parent"
                 android:layout_marginLeft="2dp"
@@ -132,7 +132,7 @@
                 android:layout_height="match_parent"
                 android:layout_marginRight="2dp"
                 android:layout_weight="1"
-                android:text="창문열기"
+                android:text="창문 열기"
                 android:textAlignment="center"
                 android:textSize="18sp" />
 
@@ -160,7 +160,7 @@
                 android:layout_height="match_parent"
                 android:layout_weight="1"
                 android:gravity="center"
-                android:text="에어컨"
+                android:text="선풍기"
                 android:textAlignment="center"
                 android:textSize="18sp" />
 

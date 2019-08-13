@@ -13,11 +13,11 @@
         android:orientation="horizontal">
 
         <Button
-            android:id="@+id/btn_a"
+            android:id="@+id/btn_manage"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:text="연결/해제" />
+            android:text="관리시작" />
 
         <Button
             android:id="@+id/btn_b"

@@ -18,10 +18,7 @@
 
 
 int Uart_main(void);
-void TX0_char(char data);
 void UART0_init(unsigned long baud);
-void TX0_string(char *string);
-void TX0_4Digit(int data);
-
+void TX0_char(char data);
 
 #endif /* UART_H_ */

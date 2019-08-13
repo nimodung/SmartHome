@@ -13,6 +13,6 @@
 int ADC_converting_value(char channel);
 void ADC_init(void);
 int Volt_to_cm(int value);
-int Volt_to_temperature(int value);
+void check_Sharp(void); // 적외선 센서 측정
 
 #endif /* ADC_H_ */

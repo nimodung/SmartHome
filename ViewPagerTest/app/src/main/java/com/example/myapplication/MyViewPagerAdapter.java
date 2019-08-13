@@ -17,6 +17,8 @@ public class MyViewPagerAdapter extends FragmentStatePagerAdapter {
 
     static Handler LEDHandler = null;
     static Handler CONNECTHandler = null;
+    static Handler ENVIRONHandler = null;
+
     Fragment[] fragments = new Fragment[3];
 
 
@@ -25,8 +27,9 @@ public class MyViewPagerAdapter extends FragmentStatePagerAdapter {
         fragments[0] = new FragmentA();
         fragments[1] = new fragmentB();
         fragments[2] = new FragmentC();
-        CONNECTHandler = new FragmentA.HandlerA();
+     //   CONNECTHandler = new FragmentA.HandlerA();
         LEDHandler = new fragmentB.HandlerB();
+        ENVIRONHandler = new FragmentC.HandlerC();
     }
 
     // 아래의 메서드들의 호출 주체는 ViewPager 이다.
@@ -41,6 +44,7 @@ public class MyViewPagerAdapter extends FragmentStatePagerAdapter {
     public int getCount() {
         return fragments.length;
     }
+
 
     public static class LEDHandler extends Handler {
         Message adapterMsg = null;
@@ -61,6 +65,17 @@ public class MyViewPagerAdapter extends FragmentStatePagerAdapter {
             adapterMsg = CONNECTHandler.obtainMessage(msg.what, msg.obj);
             //  System.out.println(msg.obj);
             CONNECTHandler.sendMessage(adapterMsg);
+        }
+    }
+
+    public static class ENVIRONHandler extends Handler {
+        Message adapterMsg = null;
+        @Override
+        public void handleMessage(Message msg) {
+            super.handleMessage(msg);
+            adapterMsg = ENVIRONHandler.obtainMessage(msg.what, msg.obj);
+            //  System.out.println(msg.obj);
+            ENVIRONHandler.sendMessage(adapterMsg);
         }
     }
 }

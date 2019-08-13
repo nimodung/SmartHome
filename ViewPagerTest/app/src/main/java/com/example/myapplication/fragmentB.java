@@ -1,7 +1,6 @@
 package com.example.myapplication;
 
-import android.content.Context;
-import android.net.Uri;
+
 import android.os.Bundle;
 
 import androidx.annotation.NonNull;
@@ -14,39 +13,42 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.CompoundButton;
+import android.widget.Switch;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import java.io.IOException;
 
 
-public class fragmentB extends Fragment {
+public class fragmentB extends Fragment{
 
-    final static int ROOM = 3;
-    final static int LIVINGROOM = 4;
-    final static int KITCHEN = 5;
-    final static int BATHROOM = 6;
-    final static int DOOR = 7;
-    final static int WHOLE = 8;
 
     Button btnLedRoom, btnLedLivingroom, btnLedKitchen, btnLedBathroom, btnLedDoor, btnLedWhole;
     TextView tvLedRoom, tvLedLivingroom, tvLedKitchen, tvLedBathroom, tvLedDoor, tvLedWhole;
+    Switch swBathRoom, swDoor;
 
-    boolean roomLedState = false, kitchenLedState = false, livingroomLedState = false,
-            bathroomLedState = false, doorLedState = false, wholeLedState = false;
-    boolean doorLedAutoState = true, bathroomLedAutoState = false;
+    static boolean roomLedState = false, kitchenLedState = false, livingroomLedState = false, wholeLedState = false;
+    static boolean  bathroomLedState = false, doorLedState = false;
+    static boolean doorLedAutoState = true, bathroomLedAutoState = true;
 
     String mStrDelimiter = "\n";
     String msg = "";
 
-    MainActivity context;
+    final static int BATHROOM = 1;
+    final static int LUX = 2;
+    final static int LED = 5;
+
+    static View view;
+    static Button btnDOOR, btnBATHROOM;
+    static TextView tvROOM, tvLIVINGR, tvKitchen, tvBATHR, tvDOOR, tvWHOLE;
+
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        View view = inflater.inflate(R.layout.fragmentb, container, false);
+        view = inflater.inflate(R.layout.fragmentb, container, false);
 
-         btnLedRoom = (Button)view.findViewById(R.id.btn_room);
+        btnLedRoom = (Button)view.findViewById(R.id.btn_room);
         tvLedRoom = (TextView)view.findViewById(R.id.tv_room);
         btnLedKitchen = (Button)view.findViewById(R.id.btn_kitchen);
         tvLedKitchen = (TextView)view.findViewById(R.id.tv_kitchen);
@@ -59,6 +61,18 @@ public class fragmentB extends Fragment {
         btnLedWhole = (Button)view.findViewById(R.id.btn_whole);
         tvLedWhole = (TextView)view.findViewById(R.id.tv_whole);
 
+        swBathRoom = (Switch)view.findViewById(R.id.sw_bathroom);
+        swDoor = (Switch)view.findViewById(R.id.sw_door);
+
+        btnDOOR = btnLedDoor;
+        btnBATHROOM = btnLedBathroom;
+
+        tvROOM = tvLedRoom;
+        tvLIVINGR = tvLedLivingroom;
+        tvKitchen = tvLedKitchen;
+        tvBATHR = tvLedBathroom;
+        tvDOOR = tvLedDoor;
+        tvWHOLE = tvLedWhole;
 
         if(roomLedState) {
             tvLedRoom.setText("ON");
@@ -96,155 +110,129 @@ public class fragmentB extends Fragment {
         else {
             tvLedWhole.setText("OFF");
         }
-
+      //  btnLedDoor.setOnClickListener(LedControl);
         return view;
     }
+
 
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        btnLedRoom.setOnClickListener(new View.OnClickListener() {
+        btnLedRoom.setOnClickListener(LedControl);
+        btnLedKitchen.setOnClickListener(LedControl);
+        btnLedLivingroom.setOnClickListener(LedControl);
+        btnLedBathroom.setOnClickListener(LedControl);
+        btnLedDoor.setOnClickListener(LedControl);
+        btnLedWhole.setOnClickListener(LedControl);
+
+
+        swBathRoom.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
-            public void onClick(View v) {
-                LedControl(v);
+            public void onCheckedChanged(CompoundButton compoundButton, boolean isChecked) {
+                try {
+                    String stateMSG = "";
+                    if(isChecked){
+                        bathroomLedAutoState = true;
+                        stateMSG= "bathroomLedAutoStatetrue\n";
+                        btnLedBathroom.setEnabled(false);
+                    }
+                    else {
+                        bathroomLedAutoState = false;
+                        stateMSG= "bathroomLedAutoStatefalse\n";
+                        btnLedBathroom.setEnabled(true);
+                    }
+
+
+                    ((MainActivity)getContext()).mOutputStream.write(stateMSG.getBytes());
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        });
+        swDoor.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton compoundButton, boolean isChecked) {
+                try {
+                    String stateMSG = "";
+                    if(isChecked){
+                        doorLedAutoState = true;
+                        stateMSG = "doorLedAutoStatetrue" + mStrDelimiter;
+                        btnLedDoor.setEnabled(false);
+                    }
+                    else {
+                        doorLedAutoState = false;
+                        stateMSG = "doorLedAutoStatefalse" + mStrDelimiter;
+                        btnLedDoor.setEnabled(true);}
+
+
+                    ((MainActivity)getContext()).mOutputStream.write(stateMSG.getBytes());
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
             }
         });
 
-        btnLedKitchen.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                LedControl(v);
-            }
-        });
-
-        btnLedLivingroom.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                LedControl(v);
-            }
-        });
-
-        btnLedBathroom.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                LedControl(v);
-            }
-        });
-
-        btnLedDoor.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                LedControl(v);
-            }
-        });
-
-        btnLedWhole.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                LedControl(v);
-            }
-        });
     }
 
-    void LedControl(View v) {
-        try {
-            switch (v.getId()) {
-                case R.id.btn_room:
-                    if (roomLedState) {
-                        msg = "led room off" + mStrDelimiter;
-                        tvLedRoom.setText("OFF");
-                        roomLedState = false;
-                    } else if (!roomLedState) {
-                        msg = "led room on" + mStrDelimiter;
-                        tvLedRoom.setText("ON");
-                        roomLedState = true;
-                    }
-                    break;
-                case R.id.btn_kitchen :
-                    if (kitchenLedState) {
-                        msg = "led kitchen off" + mStrDelimiter;
-                        tvLedKitchen.setText("OFF");
-                        kitchenLedState = false;
-                    } else if (!kitchenLedState) {
-                        msg = "led kitchen on" + mStrDelimiter;
-                        tvLedKitchen.setText("ON");
-                        kitchenLedState = true;
-                    }
-                    break;
-                case R.id.btn_livingroom :
-                    if (livingroomLedState) {
-                        msg = "led living off" + mStrDelimiter;
-                        tvLedLivingroom.setText("OFF");
-                        livingroomLedState = false;
-                    } else if (!livingroomLedState) {
-                        msg = "led living on" + mStrDelimiter;
-                        tvLedLivingroom.setText("ON");
-                        livingroomLedState = true;
-                    }
-                    break;
-                case R.id.btn_bathroom :
-                    if (bathroomLedState) {
-                        msg = "led bathroom off" + mStrDelimiter;
-                        tvLedBathroom.setText("OFF");
-                        bathroomLedState = false;
-                    } else if (!bathroomLedState) {
-                        msg = "led bathroom on" + mStrDelimiter;
-                        tvLedBathroom.setText("ON");
-                        bathroomLedState = true;
-                    }
-                    break;
-                case R.id.btn_door :
-                    if(!doorLedAutoState) {
-                        if (doorLedState) {
-                            msg = "led door off" + mStrDelimiter;
-                            tvLedDoor.setText("OFF");
-                            doorLedState = false;
-                        } else if (!doorLedState) {
-                            msg = "led door on" + mStrDelimiter;
-                            tvLedDoor.setText("ON");
-                            doorLedState = true;
-                        }
-                    }
-                    break;
-                case R.id.btn_whole :
-                    if(!doorLedAutoState && !bathroomLedAutoState) {
-                        if (wholeLedState) {
-                            msg = "led whole off" + mStrDelimiter;
-                            tvLedWhole.setText("OFF");
-                            wholeLedState = false;
-                        } else if (!wholeLedState) {
-                            msg = "led whole on" + mStrDelimiter;
-                            tvLedWhole.setText("ON");
-                            wholeLedState = true;
-                        }
-                    }
-                    else if(doorLedAutoState && !bathroomLedAutoState) {
-                        if(wholeLedState) {
-                            msg = "led whole off door" + mStrDelimiter;
-                            wholeSetText("OFF");
-                            wholeLedState = false;
-                        }
-                        else{
-                            msg = "led whole on door" + mStrDelimiter;
-                            wholeSetText("ON");
-                            wholeLedState = true;
-                        }
-                    }
-                    break;
-            }
-            ((MainActivity)getContext()).mOutputStream.write(msg.getBytes());
-        }
-        catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
 
-    void wholeSetText(String str) {
-        tvLedWhole.setText(str); tvLedRoom.setText(str); tvLedKitchen.setText(str);
-        tvLedLivingroom.setText(str);
-        if(!doorLedAutoState) tvLedDoor.setText(str);
-        if(!bathroomLedAutoState) tvLedBathroom.setText(str);
+    View.OnClickListener LedControl = new View.OnClickListener() {
+        @Override
+        public void onClick(View view) {
+            try {
+                switch (view.getId()) {
+                    case R.id.btn_room:
+                        if (roomLedState) {msg = "led room off" + mStrDelimiter;}
+                        else if (!roomLedState) { msg = "led room on" + mStrDelimiter;}
+                        break;
+                    case R.id.btn_kitchen :
+                        if (kitchenLedState) {msg = "led kitchen off" + mStrDelimiter;}
+                        else if (!kitchenLedState) {msg = "led kitchen on" + mStrDelimiter;}
+                        break;
+                    case R.id.btn_livingroom :
+                        if (livingroomLedState) {msg = "led living off" + mStrDelimiter;}
+                        else if (!livingroomLedState) {msg = "led living on" + mStrDelimiter;}
+                        break;
+                    case R.id.btn_bathroom :
+                        if (bathroomLedState) {msg = "led bathroom off" + mStrDelimiter;}
+                        else if (!bathroomLedState) {msg = "led bathroom on" + mStrDelimiter;}
+                        break;
+                    case R.id.btn_door :
+                        if (doorLedState) { msg = "led door off" + mStrDelimiter; }
+                        else if (!doorLedState) {msg = "led door on" + mStrDelimiter; }
+                        break;
+                    case R.id.btn_whole :
+                        if(!doorLedAutoState && !bathroomLedAutoState) {
+                            if (wholeLedState) {msg = "led whole off" + mStrDelimiter;}
+                            else if (!wholeLedState) {msg = "led whole on" + mStrDelimiter;}
+                        }
+                        if(doorLedAutoState && bathroomLedAutoState) {
+                            if (wholeLedState) {msg = "led whole off auto" + mStrDelimiter;}
+                            else if (!wholeLedState) {msg = "led whole on auto" + mStrDelimiter;}
+                        }
+                        else if(doorLedAutoState && !bathroomLedAutoState) {
+                            if(wholeLedState) {msg = "led whole off door" + mStrDelimiter;}
+                            else{msg = "led whole on door" + mStrDelimiter; }
+                        }
+                        else if(!doorLedAutoState && bathroomLedAutoState) {
+                            if(wholeLedState) {msg = "led whole off bathroom" + mStrDelimiter;}
+                            else{msg = "led whole on bathroom" + mStrDelimiter;}
+                        }
+                        break;
+                }
+                ((MainActivity)getContext()).mOutputStream.write(msg.getBytes());
+            }
+            catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+    };
+
+    static  void wholeSetText(String str) {
+        tvWHOLE.setText(str); tvROOM.setText(str); tvKitchen.setText(str);
+        tvLIVINGR.setText(str);
+        if(!doorLedAutoState) tvDOOR.setText(str);
+        if(!bathroomLedAutoState) tvBATHR.setText(str);
     }
 
     public static class HandlerB extends Handler {
@@ -253,10 +241,95 @@ public class fragmentB extends Fragment {
         public void handleMessage(@NonNull Message msg) {
             super.handleMessage(msg);
 
+            if(view != null) {
 
-            //System.out.println(msg.obj);
+                if(msg.what == LUX) {
+                    String strMsg = msg.obj.toString();
+                    if(strMsg.equals("on")) {
+                        doorLedState = false;
+                    }
+                    else if(strMsg.equals("off")){
+                        doorLedState = true;
+                    }
+                    btnDOOR.performClick();
+                }
+                if(msg.what == BATHROOM){
+                    String strMsg = msg.obj.toString();
+                    if(strMsg.equals("on")) {
+                        bathroomLedState = false;
+                    }
+                    else if(strMsg.equals("off")){
+                        bathroomLedState = true;
+                    }
+                    btnBATHROOM.performClick();
+                }
+                if(msg.what == LED){
+                    String[] strMsg = (msg.obj.toString()).trim().split(" ");
 
-           // Toast.makeText(this, msg.what, Toast.LENGTH_SHORT).show();
+
+                    if(strMsg[0].equals("room")){
+                        if(strMsg[1].equals("on")){
+                            tvROOM.setText("ON");
+                            roomLedState = true;
+                        }
+                        else if(strMsg[1].equals("off")){
+                            tvROOM.setText("OFF");
+                            roomLedState = false;
+                        }
+                    }
+                    else if(strMsg[0].equals("living")){
+                        if(strMsg[1].equals("on")){
+                            tvLIVINGR.setText("ON");
+                            livingroomLedState = true;
+                        }
+                        else if(strMsg[1].equals("off")){
+                            tvLIVINGR.setText("OFF");
+                            livingroomLedState = false;
+                        }
+                    }
+                    else if(strMsg[0].equals("kitchen")){
+                        if(strMsg[1].equals("on")){
+                            tvKitchen.setText("ON");
+                            kitchenLedState = true;
+                        }
+                        else if(strMsg[1].equals("off")){
+                            tvKitchen.setText("OFF");
+                            kitchenLedState = false;
+                        }
+                    }
+                    else if(strMsg[0].equals("bathroom")){
+                        if(strMsg[1].equals("on")){
+                            tvBATHR.setText("ON");
+                            bathroomLedState = true;
+                        }
+                        else if(strMsg[1].equals("off")){
+                            tvBATHR.setText("OFF");
+                            bathroomLedState = false;
+                        }
+                    }
+                    else if(strMsg[0].equals("door")){
+                        if(strMsg[1].equals("on")){
+                            tvDOOR.setText("ON");
+                            doorLedState = true;
+                        }
+                        else if(strMsg[1].equals("off")){
+                            tvDOOR.setText("OFF");
+                            doorLedState = false;
+                        }
+                    }
+                    else if(strMsg[0].equals("whole") || strMsg[0].equals("wholed") || strMsg[0].equals("wholeb")){
+                        if(strMsg[1].equals("on")){
+                            wholeSetText("ON");
+                            wholeLedState = true;
+                        }
+                        else if(strMsg[1].equals("off")){
+                            wholeSetText("OFF");
+                            wholeLedState = false;
+                        }
+                    }
+                }
+            }
+
 
         }
     }
