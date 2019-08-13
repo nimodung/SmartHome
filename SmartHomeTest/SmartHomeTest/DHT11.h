@@ -2,7 +2,7 @@
  * DHT11.h
  *
  * Created: 2019-04-23 오후 1:53:44
- *  Author: user
+ *  Author: SmartHome by HJE
  */ 
 
 
