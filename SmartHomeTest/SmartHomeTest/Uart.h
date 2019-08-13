@@ -2,7 +2,7 @@
  * Uart.h
  *
  * Created: 2019-04-17 오전 9:49:14
- *  Author: user
+ *  Author: SmartHome by HJE
  */ 
 
 
