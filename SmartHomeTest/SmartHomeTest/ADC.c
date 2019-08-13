@@ -2,7 +2,7 @@
  * ADC.c
  *
  * Created: 2019-04-24 오전 10:01:04
- *  Author: Kim Hee Ram
+ *  Author: SmartHome by HJE
  */ 
 #include <avr/io.h>
 #define F_CPU 16000000UL
