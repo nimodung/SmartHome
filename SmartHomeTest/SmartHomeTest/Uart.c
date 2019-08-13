@@ -2,7 +2,7 @@
  * Uart.c
  *
  * Created: 2019-04-16 오전 10:09:17
- *  Author: Kim Hee Ram
+ *  Author: SmartHome by HJE
  */ 
 #include <avr/io.h>
 #define F_CPU 16000000UL //시스템 클락 속도
